@@ -23,5 +23,5 @@ jobs:
           
           # Change the status of the issue using the GitHub REST API
           curl -X PATCH -H "$AUTH_HEADER" -H "$API_HEADER" \
-            -d '{"issue": {"status": "'"$NEW_STATUS"'"}' \
+            -d '{"issue": {"status": "'"$NEW_STATUS"'"}}' \
             "https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}"
