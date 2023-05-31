@@ -1,26 +1,15 @@
-name: Change Status when Assigned
+name: Move new issues into Triage
 
 on:
   issues:
-    types:
-      - assigned
+    types: [opened]
 
 jobs:
-  change-status:
+  automate-project-columns:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Change Status
-        run: |
-          ISSUE_NUMBER="${{ github.event.issue.number }}"
-          
-          # Set the required headers
-          AUTH_HEADER="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
-          API_HEADER="Accept: application/vnd.github.v3+json"
-          
-          # Change the status of the issue using the GitHub REST API
-          curl -X PATCH -H "$AUTH_HEADER" -H "$API_HEADER" \
-            -d '{"issue": {"status": "In Progress"}}' \
-            "https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}"
+      - uses: alex-page/github-project-automation-plus@v0.8.3
+        with:
+          project: @liorastavelopment's basic
+          column: In Progress
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
