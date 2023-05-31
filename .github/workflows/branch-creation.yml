@@ -1,19 +1,42 @@
-name: Update issues
+name: Create Branch on Issue Creation
 
 on:
   issues:
-    types: [opened]
-  push:
-    branches-ignore: [main]
+    types:
+      - opened
 
 jobs:
-  test:
+  create-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: peterjgrainger/action-create-branch@v2.2.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: issue-{number}
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install GitHub CLI
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh
+
+      - name: Create Branch
+        run: |
+          BRANCH_NAME="issue-${{ github.event.issue.number }}"
+          BASE_BRANCH="main"
+          
+          # Create the branch using the GitHub CLI
+          gh repo create-branch ${{ github.repository }} "$BRANCH_NAME" "$BASE_BRANCH"
+
+      - name: Link Branch to Issue
+        run: |
+          BRANCH_NAME="issue-${{ github.event.issue.number }}"
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          
+          # Set the required headers
+          AUTH_HEADER="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
+          API_HEADER="Accept: application/vnd.github.v3+json"
+          
+          # Link the branch to the issue using the GitHub REST API
+          curl -X POST -H "$AUTH_HEADER" -H "$API_HEADER" \
+            -d '{"issue":'"$ISSUE_NUMBER"',"head":"'"${{ github.repository }}:$BRANCH_NAME"'"}' \
+            "https://api.github.com/repos/${{ github.repository }}/pulls"
