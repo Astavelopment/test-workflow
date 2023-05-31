@@ -15,7 +15,6 @@ jobs:
       - name: Change Status
         run: |
           ISSUE_NUMBER="${{ github.event.issue.number }}"
-          NEW_STATUS="In Progress"
           
           # Set the required headers
           AUTH_HEADER="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
@@ -23,5 +22,5 @@ jobs:
           
           # Change the status of the issue using the GitHub REST API
           curl -X PATCH -H "$AUTH_HEADER" -H "$API_HEADER" \
-            -d '{"issue": {"status": "'"$NEW_STATUS"'"}}' \
+            -d '{"issue": {"status": "In Progress"}}' \
             "https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}"
