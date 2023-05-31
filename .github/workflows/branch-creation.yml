@@ -25,7 +25,7 @@ jobs:
           BASE_BRANCH="main"
           
           # Create the branch using the GitHub CLI
-          gh repo create-branch ${{ github.repository }} "$BRANCH_NAME" "$BASE_BRANCH"
+          gh repo create branch ${{ github.repository }} "$BRANCH_NAME" "$BASE_BRANCH"
 
       - name: Link Branch to Issue
         run: |
