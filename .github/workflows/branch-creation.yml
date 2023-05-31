@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: theonejonahgold/issued-branch@v1
+      - uses: jonahgoldwastaken/issued-branch@v1.0.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name_pattern: issue-{number}
