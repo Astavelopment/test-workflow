@@ -12,7 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Extract Number
         id: extract-number
         run: |
@@ -21,11 +20,37 @@ jobs:
           
           if [[ $BRANCH_NAME =~ $NUMBER_REGEX ]]; then
             echo "Extracted Number: ${BASH_REMATCH[1]}"
-            echo "::set-output name=number::${BASH_REMATCH[1]}"
+            echo "issue=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
           else
             echo "Failed to extract number from branch name"
             exit 1
           fi
-
-      #- name: Run a command
-      #  run: echo "This workflow was triggered by the creation of a branch with the specified prefix. Extracted Number: ${{ steps.extract-number.outputs.number }}"
+      - name: Run a command
+        run: |
+          echo "Extracted Number: ${{ steps.extract-number.outputs.issue }}"
+      - name: update issue
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = ${{ steps.extract-number.outputs.issue }};
+            const data = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue,
+            });
+            console.log(data.data);
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue,
+              status: 'In Progress',
+              debug: true,
+            });
+#      - name: Update issue
+#        uses: actions-cool/issues-helper@v3
+#        with:
+#          actions: 'update-issue'
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          issue-number: ${{ steps.extract-number.outputs.issue }}
+#          state: 'closed'
