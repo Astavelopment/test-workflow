@@ -34,7 +34,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issue = ${{ steps.extract-number.outputs.issue }};
-            const { data: issue } = await github.rest.issues.get({
+            const data = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: number,
