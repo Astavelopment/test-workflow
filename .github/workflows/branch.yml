@@ -39,6 +39,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: issue,
               status: 'In Progress',
+              debug: true,
             });
 #      - name: Update issue
 #        uses: actions-cool/issues-helper@v3
