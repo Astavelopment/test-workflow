@@ -20,11 +20,18 @@ jobs:
           
           if [[ $BRANCH_NAME =~ $NUMBER_REGEX ]]; then
             echo "Extracted Number: ${BASH_REMATCH[1]}"
-            echo "number=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "issue=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
           else
             echo "Failed to extract number from branch name"
             exit 1
           fi
       - name: Run a command
         run: |
-          echo "Extracted Number: ${{ steps.extract-number.outputs.number }}"
+          echo "Extracted Number: ${{ steps.extract-number.outputs.issue }}"
+      - name: Update issue
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.extract-number.outputs.issue }}
+          state: 'In Progress'
