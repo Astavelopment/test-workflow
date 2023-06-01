@@ -1,15 +1,17 @@
-name: Move new issues into Triage
-
 on:
   issues:
     types: [opened]
 
 jobs:
-  automate-project-columns:
+  comment:
     runs-on: ubuntu-latest
     steps:
-      - uses: alex-page/github-project-automation-plus@v0.8.3
+      - uses: actions/github-script@v6
         with:
-          project: "Test Project"
-          column: "In Progress"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '👋 Thanks for reporting!'
+            })
