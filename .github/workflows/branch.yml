@@ -39,7 +39,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: issue,
             });
-            console.log(data.data.labels);
+            console.log(data.data);
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
