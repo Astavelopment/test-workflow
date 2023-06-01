@@ -44,8 +44,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue,
-              status: 'In Progress',
-              debug: true,
+              body: "New Branch: refs/heads/${{ github.ref }}",
             });
 #      - name: Update issue
 #        uses: actions-cool/issues-helper@v3
