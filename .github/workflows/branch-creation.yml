@@ -1,17 +1,15 @@
+name: Move assigned pull requests into To do
+
 on:
-  issues:
+  pull_request:
     types: [assigned]
 
 jobs:
-  comment:
+  automate-project-columns:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v6
+      - uses: alex-page/github-project-automation-plus@v0.8.3
         with:
-          script: |
-            github.rest.issues.update({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: {status: 'In Progress'}
-            })
+          project: Test Project
+          column: In Progress
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
