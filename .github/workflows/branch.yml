@@ -34,4 +34,4 @@ jobs:
           actions: 'update-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.extract-number.outputs.issue }}
-          state: 'In Progress'
+          state: 'closed'
