@@ -33,24 +33,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const number = "${{ steps.extract-number.outputs.issue }}";
-            const octokit = context.github;
-            const { data: issue } = await octokit.rest.issues.get({
+            const issue = ${{ steps.extract-number.outputs.issue }};
+            await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: number,
-            });
-            await octokit.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: number,
-              state: 'open',
-              labels: issue.labels.map(label => label.name),
-              assignees: issue.assignees.map(assignee => assignee.login),
-              title: issue.title,
-              body: issue.body,
-              milestone: issue.milestone,
-              assignee: issue.assignee ? issue.assignee.login : null,
+              issue_number: issue,
               status: 'In Progress',
             });
 #      - name: Update issue
