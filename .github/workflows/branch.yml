@@ -28,10 +28,35 @@ jobs:
       - name: Run a command
         run: |
           echo "Extracted Number: ${{ steps.extract-number.outputs.issue }}"
-      - name: Update issue
-        uses: actions-cool/issues-helper@v3
+      - name: update issue
+        uses: actions/github-script@v6
         with:
-          actions: 'update-issue'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.extract-number.outputs.issue }}
-          state: 'closed'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const number = "${{ steps.extract-number.outputs.issue }}";
+            const octokit = context.github;
+            const { data: issue } = await octokit.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+            });
+            await octokit.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              state: 'open',
+              labels: issue.labels.map(label => label.name),
+              assignees: issue.assignees.map(assignee => assignee.login),
+              title: issue.title,
+              body: issue.body,
+              milestone: issue.milestone,
+              assignee: issue.assignee ? issue.assignee.login : null,
+              status: 'In Progress',
+            });
+#      - name: Update issue
+#        uses: actions-cool/issues-helper@v3
+#        with:
+#          actions: 'update-issue'
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          issue-number: ${{ steps.extract-number.outputs.issue }}
+#          state: 'closed'
