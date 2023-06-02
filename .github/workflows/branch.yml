@@ -17,13 +17,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "aa";
-          gh api graphql --paginate -f query='query {
-            __type(name: "Issue") {
-             name
-             kind
-             description
-             fields {
-              name
-             }
+          gh api graphql -F owner="astavelopment" -F repo="test-workflow" -F query='query ($owner: String!, $repo: String!) {
+            repository(owner: $owner, name: $repo) {
+              issues(first: 100, states: OPEN) {
+                nodes {
+                 number
+                 title
+                }
+              }
             }
           }' | jq -r '.'
