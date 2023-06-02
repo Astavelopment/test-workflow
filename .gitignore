@@ -9,3 +9,7 @@ workflow.ts
 #DDDD
 #DDDD
 #DDDD
+
+
+
+gh api "repos/astavelopmennt/test-workflow" -H "Accept: application/vnd.github.inertia-preview+json" | jq '.'

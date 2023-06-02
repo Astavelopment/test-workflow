@@ -1,55 +1,29 @@
-name: New Branch Trigger
-
+name: Add PR to project
 on:
-  create:
-    branches:
-      - 'GH-[0-9]+'
-
+  push
+permissions:
+  actions: read
+  pull-requests: read
+  contents: read
+  issues: write
+  repository-projects: write
 jobs:
-  my-job:
+  project:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Extract Number
-        id: extract-number
+      - name: Get project data
+        id: project_data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BRANCH_NAME=${{ github.ref }}
-          NUMBER_REGEX='GH-([0-9]+)'
-          
-          if [[ $BRANCH_NAME =~ $NUMBER_REGEX ]]; then
-            echo "Extracted Number: ${BASH_REMATCH[1]}"
-            echo "issue=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
-          else
-            echo "Failed to extract number from branch name"
-            exit 1
-          fi
-      - name: Run a command
-        run: |
-          echo "Extracted Number: ${{ steps.extract-number.outputs.issue }}"
-      - name: update issue
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue = ${{ steps.extract-number.outputs.issue }};
-            const data = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue,
-            });
-            console.log(data.data);
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue,
-              body: "New Branch: ${{ github.ref }}",
-            });
-#      - name: Update issue
-#        uses: actions-cool/issues-helper@v3
-#        with:
-#          actions: 'update-issue'
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          issue-number: ${{ steps.extract-number.outputs.issue }}
-#          state: 'closed'
+          echo "aa";
+          gh api graphql --paginate -f query='query {
+            __type(name: "Issue") {
+             name
+             kind
+             description
+             fields {
+              name
+             }
+            }
+          }'
