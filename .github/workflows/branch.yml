@@ -16,13 +16,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo '${{ toJSON(github) }}';
-          echo '${{ toJSON(job) }}';
-          echo '${{ toJSON(steps) }}';
-          echo '${{ toJSON(runner) }}';
-          echo '${{ toJSON(strategy) }}';
-          echo '${{ toJSON(matrix) }}';
-          gh api graphql -F owner="astavelopment" -F repo="test-workflow" -F query='query ($owner: String!, $repo: String!) {
+          gh api graphql -F owner="${{github.repository_owner}}" -F repo="${{github.repository.name}}" -F query='query ($owner: String!, $repo: String!) {
             repository(owner: $owner, name: $repo) {
               issues(first: 100) {
                 nodes {
