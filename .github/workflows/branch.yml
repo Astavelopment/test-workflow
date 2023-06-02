@@ -16,10 +16,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "aa";
+          echo context;
           gh api graphql -F owner="astavelopment" -F repo="test-workflow" -F query='query ($owner: String!, $repo: String!) {
             repository(owner: $owner, name: $repo) {
-              issues(first: 100, states: OPEN) {
+              issues(first: 100) {
                 nodes {
                  number
                  title
