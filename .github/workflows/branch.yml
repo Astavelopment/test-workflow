@@ -16,7 +16,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api graphql -F owner="${{github.repository_owner}}" -F repo="${{github.repository.name}}" -F query='query ($owner: String!, $repo: String!) {
+          gh api graphql -F owner="${{github.repository_owner}}" -F repo="${{github.event.repository.name}}" -F query='query ($owner: String!, $repo: String!) {
             repository(owner: $owner, name: $repo) {
               issues(first: 100) {
                 nodes {

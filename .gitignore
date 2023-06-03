@@ -12,4 +12,48 @@ workflow.ts
 
 
 
-gh api "repos/astavelopmennt/test-workflow" -H "Accept: application/vnd.github.inertia-preview+json" | jq '.'
+# gh api "repos/astavelopmennt/test-workflow" -H "Accept: application/vnd.github.inertia-preview+json" | jq '.'
+
+
+# New Branch
+# Get Issue ID
+# Find Issue Using this ID
+# If Not Exists Through Error
+# If exists Link Them together
+# Find Item in Project
+# Check if in progress column
+# If yes nothing to do
+# If not Move it to there
+
+
+
+#
+#name: New Branch Trigger
+#
+#on:
+#  create:
+#    branches:
+#      - 'GH-[0-9]+'
+#
+#jobs:
+#  my-job:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Get project data
+#        id: extract-number
+#        run: |
+#          BRANCH_NAME=${{ github.ref }}
+#          NUMBER_REGEX='GH-([0-9]+)'
+#
+#          if [[ $BRANCH_NAME =~ $NUMBER_REGEX ]]; then
+#            echo "Extracted Number: ${BASH_REMATCH[1]}"
+#            echo "issue=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+#          else
+#            echo "Failed to extract number from branch name"
+#            exit 1
+#          fi
+#      - name: Run a command
+#        run: |
+#          echo "Extracted Number: ${{ steps.extract-number.outputs.issue }}"
+#
