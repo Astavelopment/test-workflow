@@ -1,28 +1,46 @@
-name: Add PR to project
+name: Move to Ready
+
 on:
-  push
-permissions:
-  actions: read
-  pull-requests: read
-  contents: read
-  issues: write
-  repository-projects: write
+  issues:
+    types:
+      - assigned
+  pull_request:
+    types:
+      - assigned
+
 jobs:
-  project:
+  move-to-ready:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Get project data
-        id: project_data
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Install jq
+        run: sudo apt-get install jq -y
+
+      - name: Move to Ready
         run: |
-          gh api graphql -F owner="${{github.repository_owner}}" -F repo="${{github.event.repository.name}}" -F query='query ($owner: String!, $repo: String!) {
-            repository(owner: $owner, name: $repo) {
-              issues(first: 100) {
-                nodes {
-                 number
-                 title
-                }
-              }
-            }
-          }' | jq -r '.'
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          ISSUE_NUMBER=$(jq --raw-output .issue.number "$GITHUB_EVENT_PATH")
+
+          # Replace "COLUMN_NAME" with the actual name of the column you want to move the issue to
+          COLUMN_NAME="Ready"
+
+          # Get the project ID using the GitHub REST API
+          PROJECT_ID=$(curl -s -H "Authorization: Bearer $TOKEN" \
+                        -H "Accept: application/vnd.github.inertia-preview+json" \
+                        "https://api.github.com/repos/$GITHUB_REPOSITORY/projects" | jq -r '.[] | select(.name == "projectV2") | .id')
+
+          # Get the column ID using the GitHub REST API
+          COLUMN_ID=$(curl -s -H "Authorization: Bearer $TOKEN" \
+                        -H "Accept: application/vnd.github.inertia-preview+json" \
+                        "https://api.github.com/projects/$PROJECT_ID/columns" | jq -r '.[] | select(.name == "$COLUMN_NAME") | .id')
+
+          # Move issue to the desired column using the GraphQL API
+          curl -X POST \
+            -H "Accept: application/vnd.github.starfire-preview+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "GraphQL-Features: projects_next_graphql" \
+            -d "{\"operationName\":\"MoveIssue\",\"variables\":{\"issueId\":\"$ISSUE_NUMBER\",\"columnId\":\"$COLUMN_ID\",\"repositoryId\":\"$GITHUB_REPOSITORY_ID\",\"clientMutationId\":\"\"},\"query\":\"mutation MoveIssue($issueId: ID!, $columnId: ID!, $repositoryId: ID!, $clientMutationId: String) {\\n  moveProjectCard(input: {issueId: $issueId, columnId: $columnId, repositoryId: $repositoryId, clientMutationId: $clientMutationId}) {\\n    __typename\\n  }\\n}\\n\"}" \
+            "https://api.github.com/graphql"
