@@ -21,6 +21,7 @@ jobs:
 
       - name: Move to Ready
         run: |
+          echo "${{ github }}"
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
           ISSUE_NUMBER=${{ github.event.issue.number }}
 
