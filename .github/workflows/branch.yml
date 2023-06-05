@@ -22,6 +22,7 @@ jobs:
       - name: Move to Ready
         run: |
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          echo "${GITHUB_EVENT_PATH}"
           ISSUE_NUMBER=$(jq --raw-output .issue.number "$GITHUB_EVENT_PATH")
 
           # Replace "COLUMN_NAME" with the actual name of the column you want to move the issue to
