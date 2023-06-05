@@ -1,56 +1,46 @@
-name: New Branch Trigger
+name: Move to Ready
 
 on:
-  create:
-    branches:
-      - 'GH-[0-9]+'
+  issues:
+    types:
+      - assigned
+  pull_request:
+    types:
+      - assigned
 
 jobs:
-  my-job:
+  move-to-ready:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Extract Number
-        id: extract-number
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Install jq
+        run: sudo apt-get install jq -y
+
+      - name: Move to Ready
         run: |
-          BRANCH_NAME=${{ github.ref }}
-          NUMBER_REGEX='GH-([0-9]+)'
-          
-          if [[ $BRANCH_NAME =~ $NUMBER_REGEX ]]; then
-            echo "Extracted Number: ${BASH_REMATCH[1]}"
-            echo "issue=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
-          else
-            echo "Failed to extract number from branch name"
-            exit 1
-          fi
-      - name: Run a command
-        run: |
-          echo "Extracted Number: ${{ steps.extract-number.outputs.issue }}"
-      - name: update issue
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue = ${{ steps.extract-number.outputs.issue }};
-            const data = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue,
-            });
-            console.log(data.data);
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue,
-              status: 'In Progress',
-              debug: true,
-            });
-#      - name: Update issue
-#        uses: actions-cool/issues-helper@v3
-#        with:
-#          actions: 'update-issue'
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          issue-number: ${{ steps.extract-number.outputs.issue }}
-#          state: 'closed'
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          ISSUE_NUMBER=$(jq --raw-output .issue.number "$GITHUB_EVENT_PATH")
+
+          # Replace "COLUMN_NAME" with the actual name of the column you want to move the issue to
+          COLUMN_NAME="Ready"
+
+          # Get the project ID using the GitHub REST API
+          PROJECT_ID=$(curl -s -H "Authorization: Bearer $TOKEN" \
+                        -H "Accept: application/vnd.github.inertia-preview+json" \
+                        "https://api.github.com/repos/$GITHUB_REPOSITORY/projects" | jq -r '.[] | select(.name == "projectV2") | .id')
+
+          # Get the column ID using the GitHub REST API
+          COLUMN_ID=$(curl -s -H "Authorization: Bearer $TOKEN" \
+                        -H "Accept: application/vnd.github.inertia-preview+json" \
+                        "https://api.github.com/projects/$PROJECT_ID/columns" | jq -r '.[] | select(.name == "$COLUMN_NAME") | .id')
+
+          # Move issue to the desired column using the GraphQL API
+          curl -X POST \
+            -H "Accept: application/vnd.github.starfire-preview+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "GraphQL-Features: projects_next_graphql" \
+            -d "{\"operationName\":\"MoveIssue\",\"variables\":{\"issueId\":\"$ISSUE_NUMBER\",\"columnId\":\"$COLUMN_ID\",\"repositoryId\":\"$GITHUB_REPOSITORY_ID\",\"clientMutationId\":\"\"},\"query\":\"mutation MoveIssue($issueId: ID!, $columnId: ID!, $repositoryId: ID!, $clientMutationId: String) {\\n  moveProjectCard(input: {issueId: $issueId, columnId: $columnId, repositoryId: $repositoryId, clientMutationId: $clientMutationId}) {\\n    __typename\\n  }\\n}\\n\"}" \
+            "https://api.github.com/graphql"
